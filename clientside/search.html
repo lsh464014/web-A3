@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Fundraisers</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f4f4f9;
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-around;
+            background-color: #28a745;
+            padding: 10px;
+            width: 100%;
+        }
+
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            padding: 14px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+
+        .navbar a:hover {
+            background-color: #28a745;
+        }
+
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            width: 80%;
+            margin-top: 20px;
+            align-items: center;
+        }
+
+        .form-section {
+            width: 100%;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            color: #333;
+            font-size: 24px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        input[type="text"],
+        select {
+            width: calc(100% - 20px);
+            padding: 12px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+            transition: border-color 0.3s ease;
+        }
+
+        input[type="text"]:focus,
+        select:focus {
+            border-color: #28a745;
+            outline: none;
+        }
+
+        button {
+            padding: 12px 20px;
+            background: #28a745;
+            border: none;
+            color: white;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            transition: background 0.3s ease, transform 0.2s ease;
+        }
+
+        button:hover {
+            background: #28a745;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .error {
+            color: red;
+            font-weight: bold;
+            margin-top: 10px;
+            text-align: center;
+        }
+
+        .fundraiser-list {
+            list-style-type: none;
+            padding: 0;
+            margin: 20px 0;
+        }
+
+        .fundraiser-list li {
+            background: #fff;
+            margin-bottom: 15px;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+            transition: box-shadow 0.3s ease;
+        }
+
+        .fundraiser-list li:hover {
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .fundraiser-list a {
+            color: #28a745;
+            font-weight: bold;
+            text-decoration: none;
+            font-size: 18px;
+            display: block;
+        }
+
+        .fundraiser-list a:hover {
+            color: #28a745;
+            text-decoration: underline;
+        }
+
+        .fundraiser-list p {
+            margin: 5px 0;
+            color: #555;
+            font-size: 14px;
+        }
+
+        .fundraiser-image {
+            max-width: 100%;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <a href="index.html">Home</a>
+        <a href="search.html">Search</a>
+        <a href="fundraiser.html">Fundraiser</a>
+        <a href="./admin.html">Admin</a>
+    </div>
+
+    <div class="main-content">
+        <div class="form-section">
+            <h1>Search Fundraisers</h1>
+            <form id="searchForm">
+                <label for="organizer">Organizer:</label>
+                <input type="text" id="organizer" name="organizer">
+
+                <label for="city">City:</label>
+                <input type="text" id="city" name="city">
+
+                <label for="category">Category:</label>
+                <select id="category" name="category">
+                    <option value="">Select Category</option>
+                </select>
+
+                <button type="button" onclick="searchFundraisers()">Search</button>
+                <button type="button" onclick="clearCheckboxes()">Clear</button>
+            </form>
+
+            <p id="errorMsg" class="error" style="display: none;">Please select at least one search criteria!</p>
+            <p id="noResultMsg" class="error" style="display: none;">No fundraisers found!</p>
+            <ul id="fundraiserList" class="fundraiser-list"></ul>
+        </div>
+        <div class="right-section">
+            <img src="https://img0.baidu.com/it/u=3091027813,4242531763&fm=253&fmt=auto&app=138&f=JPEG?w=701&h=500" alt="Fundraiser Image" class="fundraiser-image">
+        </div>
+    </div>
+
+    <script>
+        function clearCheckboxes() {
+            document.getElementById('searchForm').reset();
+            document.getElementById('errorMsg').style.display = 'none';
+            document.getElementById('noResultMsg').style.display = 'none';
+            document.getElementById('fundraiserList').innerHTML = '';
+        }
+
+        async function searchFundraisers() {
+            const organizer = document.getElementById('organizer').value;
+            const city = document.getElementById('city').value;
+            const category = document.getElementById('category').value;
+
+            if (!organizer && !city && !category) {
+                document.getElementById('errorMsg').style.display = 'block';
+                return;
+            } else {
+                document.getElementById('errorMsg').style.display = 'none';
+            }
+
+            try {
+                const response = await fetch(`http://127.0.0.1:3001/api/UserByOther?organizer=${organizer}&city=${city}&categoryId=${category}`);
+                const data = await response.json();
+                document.getElementById('fundraiserList').innerHTML = '';
+                document.getElementById('noResultMsg').style.display = 'none';
+
+                if (data.code === 200 && data.data.length > 0) {
+                    data.data.forEach(fundraiser => {
+                        const listItem = document.createElement('li');
+                        listItem.innerHTML = `
+                            <a href="fundraiser.html?id=${fundraiser.FUNDRAISER_ID}">${fundraiser.ORGANIZER} - ${fundraiser.CAPTION}</a>
+                            <p>City: ${fundraiser.CITY}</p>
+                        `;
+                        document.getElementById('fundraiserList').appendChild(listItem);
+                    });
+                } else {
+                    document.getElementById('noResultMsg').style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Error fetching fundraisers:', error);
+            }
+        }
+
+        async function loadCategories() {
+            try {
+                const response = await fetch('http://127.0.0.1:3001/api/AllCategory');
+                const data = await response.json();
+
+                if (data.code === 200 && data.data.length > 0) {
+                    const categorySelect = document.getElementById('category');
+                    data.data.forEach(category => {
+                        const option = document.createElement('option');
+                        option.value = category.CATEGORY_ID;
+                        option.text = category.NAME;
+                        categorySelect.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('Error fetching categories:', error);
+            }
+        }
+
+        window.onload = function() {
+            loadCategories();
+        };
+    </script>
+
+</body>
+</html>

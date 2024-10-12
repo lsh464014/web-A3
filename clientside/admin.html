@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Active Fundraisers</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-around;
+            background-color: #333;
+            padding: 10px;
+        }
+
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            padding: 14px 20px;
+            font-size: 16px;
+        }
+
+        .navbar a:hover {
+            background-color: #ddd;
+            color: black;
+        }
+
+        .content {
+            padding: 20px;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        .fundraiser-list {
+            display: flex;
+            flex-wrap: wrap;
+            margin: 20px;
+            padding: 0;
+            list-style-type: none;
+        }
+
+        .fundraiser-item {
+            background-color: #ffffff;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px;
+            width: calc(30% - 20px);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s;
+        }
+
+        .fundraiser-item:hover {
+            transform: translateY(-2px);
+        }
+
+        strong {
+            color: #28a745;
+        }
+
+        .no-fundraisers {
+            text-align: center;
+            color: #ff0000;
+        }
+
+        .loading {
+            text-align: center;
+            color: #28a745;
+        }
+
+        .search-container {
+            margin: 20px 0;
+        }
+
+        .search-container input {
+            padding: 10px;
+            font-size: 16px;
+        }
+
+        .search-container button {
+            padding: 10px;
+            font-size: 16px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        .search-container button:hover {
+            background-color: #39c75a;
+        }
+        #modalOverlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+}
+label {
+    display: block;
+    margin-bottom: 10px;
+    font-weight: bold;
+}
+
+input[type="text"],
+input[type="number"],
+select {
+    width: 100%;
+    padding: 10px;
+    margin-top: 5px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 16px;
+    box-sizing: border-box;
+}
+
+button {
+    padding: 10px 20px;
+    font-size: 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #28a745;
+    color: #fff;
+}
+#modalSubmit {
+    background-color: #28a745;
+    color: white;
+    margin-right: 10px;
+}
+
+button[type="button"] {
+    background-color: #6c757d;
+    color: white;
+}
+.navbar {
+            display: flex;
+            justify-content: space-around;
+            background-color: #28a745;
+            padding: 10px;
+            width: 100%;
+        }
+
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            padding: 14px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+
+        .navbar a:hover {
+            background-color: #28a745;
+        }
+        .top-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            /* margin-bottom: 20px; */
+            margin-top: 30px;
+        }
+      
+
+        
+    </style>
+</head>
+
+<body>
+    <div class="navbar">
+        <a href="./index.html">Home</a>
+        <a href="./search.html">Search</a>
+        <a href="./fundraiser.html">Fundraiser</a>
+        <a href="./admin.html">Admin</a>
+    </div>
+    <div class="top-section">
+        <img src="https://img0.baidu.com/it/u=3091027813,4242531763&fm=253&fmt=auto&app=138&f=JPEG?w=701&h=500" alt="Fundraiser Image" class="fundraiser-image">
+    </div>
+    <div id="modalOverlay"></div>
+
+    <div class="content">
+        <div class="search-container">
+            <input type="text" id="fundraiserId" placeholder="Fundraiser ID" style="width: 300px;">
+            <button onclick="searchFundraiser()">Search</button>
+            <button onclick="showAddFundraiserModal()" style="float: right;margin-right: 100px;">Add</button>
+        </div>
+    </div>
+    <ul class="fundraiser-list" id="fundraiser-list"></ul>
+
+    <div id="fundraiserModal" style="display:none; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1000;">
+        <h2 id="modalTitle">Add Fundraiser</h2>
+        <label>Organizer: <input type="text" id="organizer"></label><br>
+        <label>Caption: <input type="text" id="caption"></label><br>
+        <label>City: <input type="text" id="city"></label><br>
+        <label>Target Funding: <input type="number" id="targetFunding"></label><br>
+        <label>Current Funding: <input type="number" id="currentFunding"></label><br>
+        <label>Category: 
+            <select id="categoryId">
+                <option value="1">Healthcare</option>
+                <option value="2">Animal Welfare</option>
+                <option value="3">Disaster Relief</option>
+                <option value="4">Education</option>
+                <option value="5">Environmental Protection</option>
+       
+            </select>
+        </label><br>
+        <button id="modalSubmit" onclick="submitFundraiser()">Submit</button>
+        <button onclick="closeModal()">Cancel</button>
+    </div>
+
+    <script>
+        async function fetchFundraisers() {
+            document.getElementById('fundraiser-list').innerHTML = '<li class="loading">Loading fundraisers...</li>';
+            try {
+                const response = await fetch(`http://127.0.0.1:3001/api/AllUser`);
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                const data = await response.json();
+                displayFundraisers(data.data);
+            } catch (error) {
+                console.error('Error fetching fundraisers:', error);
+                document.getElementById('fundraiser-list').innerHTML = '<li class="no-fundraisers">Error loading fundraisers.</li>';
+            }
+        }
+
+        function displayFundraisers(fundraisers) {
+    const list = document.getElementById('fundraiser-list');
+    list.innerHTML = '';
+
+    if (fundraisers.length === 0) {
+        list.innerHTML = '<li class="no-fundraisers">No active fundraisers found.</li>';
+        return;
+    }
+
+    const categoryMapping = {
+        '1': 'Healthcare',
+    '2': 'Animal Welfare',
+    '3': 'Disaster Relief',
+    '4': 'Education',
+    '5': 'Environmental Protection'
+    };
+
+    const cnt = Array(4).fill(0);
+
+    fundraisers.forEach(fundraiser => {
+        const activeStatus = fundraiser.ACTIVE === '1' ? 'Active' : 'Inactive';
+        const categoryName = categoryMapping[fundraiser.CATEGORY_ID] || 'Unknown';
+
+        const listItem = document.createElement('li');
+        listItem.className = 'fundraiser-item';
+        listItem.innerHTML = `
+            <div style="display: flex; flex-direction: column;">
+    <div>
+        <strong>Organizer:</strong> ${fundraiser.ORGANIZER}<br>
+        <strong>Caption:</strong> ${fundraiser.CAPTION}<br>
+        <strong>City:</strong> ${fundraiser.CITY}<br>
+        <strong>Target Funding:</strong> ${fundraiser.TARGET_FUNDING}<br>
+        <strong>Current Funding:</strong> ${fundraiser.CURRENT_FUNDING}<br>
+        <strong>Status:</strong> ${activeStatus}<br>
+        <strong>Fundraiser ID:</strong> ${fundraiser.FUNDRAISER_ID}<br>
+        <strong>Category:</strong> ${categoryName}<br>
+    </div>
+    <div style="display: flex; flex-direction: column; justify-content: flex-end; align-items: center;">
+        <div style="margin-top: 20px;">
+            <button style="background-color: #4CAF50; color: white; margin-bottom: 5px; padding: 10px; border: none; border-radius: 5px;margin-right:50px" onclick="editFundraiser(${fundraiser.FUNDRAISER_ID})">Edit</button>
+            <button style="background-color: #f44336; color: white; padding: 10px; border: none; border-radius: 5px;" onclick="deleteFundraiser(${fundraiser.FUNDRAISER_ID})">Delete</button>
+        </div>
+    </div>
+</div>
+
+        `;
+        list.appendChild(listItem);
+    });
+}
+
+        async function deleteFundraiser(fundraiserId) {
+            const confirmation = confirm('Are you sure you want to delete this fundraiser?');
+            if (!confirmation) return;
+
+            try {
+                const response = await fetch(`http://127.0.0.1:3001/api/fundraiserDelete?id=${fundraiserId}`, {
+                    method: 'DELETE'
+                });
+                if (response.status == 200) {
+                    alert('Fundraiser deleted successfully');
+                    fetchFundraisers();  // Reload the list after deletion
+                } else {
+                    alert('Error deleting fundraiser');
+                }
+            } catch (error) {
+                console.error('Error deleting fundraiser:', error);
+                alert('Error deleting fundraiser');
+            }
+        }
+
+        async function searchFundraiser() {
+            const fundraiserId = document.getElementById('fundraiserId').value;
+            // if (!fundraiserId) {
+            //     alert('Please enter a Fundraiser ID');
+            //     return;
+            // }
+            document.getElementById('fundraiser-list').innerHTML = '<li class="loading">Loading fundraisers...</li>';
+            try {
+                const response = await fetch(`http://127.0.0.1:3001/api/AllUser?id=${fundraiserId}`);
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                const data = await response.json();
+                displayFundraisers(data.data);
+            } catch (error) {
+                console.error('Error fetching fundraisers:', error);
+                document.getElementById('fundraiser-list').innerHTML = '<li class="no-fundraisers">Error loading fundraisers.</li>';
+            }
+        }
+
+
+        function showAddFundraiserModal() {
+            document.getElementById('modalOverlay').style.display = 'block';
+            document.getElementById('modalTitle').innerText = 'Add Fundraiser';
+            document.getElementById('organizer').value = '';
+            document.getElementById('caption').value = '';
+            document.getElementById('city').value = '';
+            document.getElementById('targetFunding').value = ''; 
+            document.getElementById('currentFunding').value = '';
+            document.getElementById('categoryId').value = '';
+            document.getElementById('fundraiserModal').style.display = 'block';
+            document.getElementById('modalSubmit').onclick = () => submitFundraiser();
+        }
+
+        async function submitFundraiser() {
+            const organizer = document.getElementById('organizer').value;
+            const caption = document.getElementById('caption').value;
+            const city = document.getElementById('city').value;
+            const targetFunding = document.getElementById('targetFunding').value;
+            const currentFunding = document.getElementById('currentFunding').value;
+            const categoryId = document.getElementById('categoryId').value;
+
+            if (!organizer || !caption || !city || !targetFunding || !categoryId) {
+                alert('Please fill in all fields');
+                return;
+            }
+
+            const newFundraiser = {
+                ORGANIZER: organizer,
+                CAPTION: caption,
+                CITY: city,
+                TARGET_FUNDING: targetFunding,
+                CATEGORY_ID: categoryId,
+                CURRENT_FUNDING:currentFunding,
+            };
+
+            try {
+                const response = await fetch(`http://127.0.0.1:3001/api/createFundraiser`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(newFundraiser)
+                });
+
+                if (response.ok) {
+                    alert('Fundraiser added successfully');
+                    fetchFundraisers();
+                    closeModal();
+                } else {
+                    alert('Error adding fundraiser');
+                }
+            } catch (error) {
+                console.error('Error adding fundraiser:', error);
+                alert('Error adding fundraiser');
+            }
+        }
+
+        function closeModal() {
+      
+            document.getElementById('modalOverlay').style.display = 'none';
+            document.getElementById('fundraiserModal').style.display = 'none';
+        }
+
+        async function editFundraiser(fundraiserId) {
+    try {
+        const response = await fetch(`http://127.0.0.1:3001/api/AllUser?id=${fundraiserId}`);
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        const fundraiser = await response.json();
+        console.log(fundraiser.data[0])
+
+
+        document.getElementById('modalTitle').innerText = 'Edit Fundraiser';
+        document.getElementById('organizer').value = fundraiser.data[0].ORGANIZER;
+        document.getElementById('caption').value = fundraiser.data[0].CAPTION;
+        document.getElementById('city').value = fundraiser.data[0].CITY;
+        document.getElementById('targetFunding').value = fundraiser.data[0].TARGET_FUNDING;
+        document.getElementById('currentFunding').value = fundraiser.data[0].CURRENT_FUNDING; 
+        document.getElementById('categoryId').value = fundraiser.data[0].CATEGORY_ID;
+
+        document.getElementById('modalOverlay').style.display = 'block';
+        document.getElementById('fundraiserModal').style.display = 'block';
+
+        document.getElementById('modalSubmit').onclick = () => updateFundraiser(fundraiserId);
+    } catch (error) {
+        console.error('Error fetching fundraiser details:', error);
+        alert('Error loading fundraiser details');
+    }
+}
+
+
+async function updateFundraiser(fundraiserId) {
+    const organizer = document.getElementById('organizer').value;
+    const caption = document.getElementById('caption').value;
+    const city = document.getElementById('city').value;
+    const targetFunding = document.getElementById('targetFunding').value;
+    const currentFunding = document.getElementById('currentFunding').value; 
+    const categoryId = document.getElementById('categoryId').value;
+
+    if (!organizer || !caption || !city || !targetFunding || !categoryId) {
+        alert('Please fill in all fields');
+        return;
+    }
+
+    const updatedFundraiser = {
+        ORGANIZER: organizer,
+        CAPTION: caption,
+        CITY: city,
+        TARGET_FUNDING: targetFunding,
+        CURRENT_FUNDING: currentFunding,
+        CATEGORY_ID: categoryId
+    };
+
+    try {
+        const response = await fetch(`http://127.0.0.1:3001/api/updateFundraiser?id=${fundraiserId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(updatedFundraiser)
+        });
+
+        if (response.ok) {
+            alert('Fundraiser updated successfully');
+            fetchFundraisers();
+            closeModal();
+        } else {
+            alert('Error updating fundraiser');
+        }
+    } catch (error) {
+        console.error('Error updating fundraiser:', error);
+        alert('Error updating fundraiser');
+    }
+}
+
+        fetchFundraisers();
+    </script>
+
+</body>
+
+</html>

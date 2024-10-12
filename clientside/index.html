@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Active Fundraisers</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f8f5;
+            margin: 0;
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-around;
+            background-color: #28a745;
+            padding: 10px;
+            width: 100%;
+        }
+
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            padding: 14px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+
+        .navbar a:hover {
+            background-color: #28a745;
+        }
+
+        .content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .fundraiser-list {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            list-style-type: none;
+            padding: 0;
+            width: 100%;
+        }
+
+        .fundraiser-item {
+            background-color: #ffffff;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            cursor: pointer;
+        }
+
+        .fundraiser-item:hover {
+            transform: translateY(-2px);
+        }
+
+        strong {
+            color: #28a745;
+        }
+
+        .no-fundraisers {
+            text-align: center;
+            color: #ff0000;
+        }
+
+        .loading {
+            text-align: center;
+            color: #28a745;
+        }
+
+        .fundraiser-image {
+            width: 100%;
+            max-width: 500px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .search-bar {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .search-bar input {
+            padding: 10px;
+            font-size: 16px;
+            width: 300px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-right: 10px;
+        }
+
+        .search-bar button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        .search-bar button:hover {
+            background-color: #218838;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <a href="./index.html">Home</a>
+        <a href="./search.html">Search</a>
+        <a href="./fundraiser.html">Fundraiser</a>
+        <a href="./admin.html">Admin</a>
+    </div>
+    
+    <div class="content">
+        <div style="display: flex;">
+            <img src="https://img0.baidu.com/it/u=3091027813,4242531763&fm=253&fmt=auto&app=138&f=JPEG?w=701&h=500" alt="Fundraiser Image" class="fundraiser-image">
+            <img src="https://5b0988e595225.cdn.sohucs.com/images/20180922/7850f006e82a4727a0423243c5ba2380.jpeg" alt="Fundraiser Image" class="fundraiser-image">
+        </div>
+
+        <h1>Active Fundraisers</h1>
+        <div class="search-bar">
+            <input type="text" id="searchKeyword" placeholder="Search fundraisers ID">
+            <button onclick="fetchFundraisers()">Search</button>
+        </div>
+
+        <ul class="fundraiser-list" id="fundraiser-list"></ul>
+    </div>
+
+    <script>
+        async function fetchFundraisers() {
+            const keyword = document.getElementById('searchKeyword').value.trim().toLowerCase();
+
+            document.getElementById('fundraiser-list').innerHTML = '<li class="loading">Loading fundraisers...</li>';
+            try {
+                const response = await fetch(`http://127.0.0.1:3001/api/AllUser?id=${keyword}`);
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                const data = await response.json();
+                displayFundraisers(data.data, keyword);
+            } catch (error) {
+                console.error('Error fetching fundraisers:', error);
+                document.getElementById('fundraiser-list').innerHTML = '<li class="no-fundraisers">Error loading fundraisers.</li>';
+            }
+        }
+
+        function displayFundraisers(fundraisers, keyword) {
+            const list = document.getElementById('fundraiser-list');
+            list.innerHTML = '';
+const filteredFundraisers = fundraisers
+            // const filteredFundraisers = fundraisers.filter(fundraiser => 
+            //     fundraiser.ORGANIZER.toLowerCase().includes(keyword) ||
+            //     fundraiser.CAPTION.toLowerCase().includes(keyword)
+            // );
+
+            // if (filteredFundraisers.length === 0) {
+            //     list.innerHTML = '<li class="no-fundraisers">No active fundraisers found.</li>';
+            //     return;
+            // }
+
+            const categoryMapping = {
+                '1': 'Healthcare',
+                '2': 'Animal Welfare',
+                '3': 'Disaster Relief',
+                '4': 'Education',
+                '5': 'Environmental Protection'
+            };
+
+            filteredFundraisers.forEach(fundraiser => {
+                const activeStatus = fundraiser.ACTIVE === '1' ? 'Active' : 'Inactive';
+                const categoryName = categoryMapping[fundraiser.CATEGORY_ID] || 'Unknown';
+
+                const listItem = document.createElement('li');
+                listItem.className = 'fundraiser-item';
+                listItem.innerHTML = `
+                    <strong>Organizer:</strong> ${fundraiser.ORGANIZER}<br>
+                    <strong>Caption:</strong> ${fundraiser.CAPTION}<br>
+                    <strong>City:</strong> ${fundraiser.CITY}<br>
+                    <strong>Target Funding:</strong> ${fundraiser.TARGET_FUNDING}<br>
+                    <strong>Current Funding:</strong> ${fundraiser.CURRENT_FUNDING}<br>
+                    <strong>Status:</strong> ${activeStatus}<br>
+                    <strong>Fundraiser ID:</strong> ${fundraiser.FUNDRAISER_ID}<br>
+                    <strong>Category:</strong> ${categoryName}<br>
+                `;
+                listItem.onclick = () => {
+                    window.location.href = `fundraiser.html?id=${fundraiser.FUNDRAISER_ID}`;
+                };
+
+                list.appendChild(listItem);
+            });
+        }
+
+        fetchFundraisers();
+    </script>
+
+</body>
+</html>
